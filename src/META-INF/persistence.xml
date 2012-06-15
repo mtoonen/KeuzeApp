@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="1.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd">
+  <persistence-unit name="beroepenkiezerPU">
+    <provider>org.hibernate.ejb.HibernatePersistence</provider>
+    <class>meine.models.Foto</class>
+    <class>meine.models.Gebruiker</class>
+    <class>meine.models.Groep</class>
+    <class>meine.models.Leerling</class>
+    <class>meine.models.Rol</class>
+    <class>meine.models.Test</class>
+    <class>meine.models.LopendeTest</class>
+    <class>meine.models.KeuzeMoment</class>
+    <class>meine.models.KeuzeMomentFoto</class>
+    <properties>
+      <property name="hibernate.connection.driver_class" value="org.postgresql.Driver"/>
+      <!--property name="hibernate.connection.username" value="verkeersmonitor"/>
+      <property name="hibernate.connection.password" value="verkeersmonitor"/>
+      <property name="hibernate.connection.url" value="jdbc:postgresql://x5.b3p.nl:5432/verkeersmonitor"/-->
+      <property name="hibernate.connection.url" value="jdbc:postgresql://localhost:5432/beroepenkiezer"/>
+      <property name="hibernate.connection.username" value="beroepenkiezer"/>
+      <property name="hibernate.connection.password" value="beroepenkiezer"/>
+      <property name="hibernate.cache.provider_class" value="org.hibernate.cache.NoCacheProvider"/>
+      <!--property name="hibernate.dialect" value="org.hibernatespatial.postgis.PostgisDialect"/-->
+      <property name="hibernate.ejb.naming_strategy" value="org.hibernate.cfg.ImprovedNamingStrategy"/>
+      <property name="hibernate.c3p0.initial_size" value="0"/>
+      <property name="hibernate.c3p0.max_size" value="50"/>
+      <property name="hibernate.c3p0.min_size" value="0"/>
+      <property name="hibernate.c3p0.timeout" value="60"/>
+      <property name="hibernate.c3p0.idle_test_period" value="100"/>
+      <property name="hibernate.show_sql" value="false"/>
+    </properties>
+  </persistence-unit>
+</persistence>
