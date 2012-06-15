@@ -1,0 +1,417 @@
+/*
+ * TestFourPanel.java
+ *
+ * Created on 1-dec-2011, 20:40:04
+ */
+package meine.app;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Date;
+import java.util.Set;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
+import javax.swing.JFrame;
+import javax.swing.Timer;
+import meine.models.KeuzeMoment;
+import meine.models.KeuzeMomentFoto;
+import meine.models.LopendeTest;
+import meine.util.MyDb;
+import meine.util.Plaats;
+import meine.util.Status;
+import meine.util.TestTaker;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+/**
+ *
+ * @author Meine Toonen
+ */
+public class TestFourPanel extends javax.swing.JFrame implements TestTaker, ActionListener {
+
+    private static final Log log = LogFactory.getLog(TestFourPanel.class);
+    private KeuzeMoment[] keuzemomentenArray;
+    private LopendeTest test;
+    private int plek = 0;
+    private KeuzeMoment current = null;
+    private Date startmoment;
+    private Timer timer;
+    private boolean timerFinished = false;
+
+    /** Creates new form TestFourPanel */
+    public TestFourPanel(LopendeTest test) {
+        initComponents();
+        this.test = test;
+        foto1.setPlaats(Plaats.LINKSBOVEN);
+        foto2.setPlaats(Plaats.RECHTSBOVEN);
+        foto3.setPlaats(Plaats.LINKSONDER);
+        foto4.setPlaats(Plaats.RECHTSONDER);
+
+        this.setExtendedState(this.getExtendedState() | JFrame.MAXIMIZED_BOTH);
+        jPanel1.setSize(this.getWidth(), this.getHeight());
+
+        this.pack();
+        this.setVisible(true);
+        timer = new Timer(test.getTijdlimiet() * 60 * 1000, this);
+        timer.setRepeats(false);
+        leerlingnaam.setText(test.getLeerling().getNaam());
+    }
+
+    private void runTest() {
+        EntityManager em = MyDb.getThreadEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+        try {
+            transaction.begin();
+            test.setStatus(Status.BEZIG);
+        } catch (Exception e) {
+            log.error("", e);
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+        } finally {
+            if (transaction.isActive()) {
+                transaction.commit();
+            }
+
+        }
+        foto1.setTestTaker(this);
+        foto2.setTestTaker(this);
+        foto3.setTestTaker(this);
+        foto4.setTestTaker(this);
+        Set<KeuzeMoment> keuzemomenten = test.getKeuzemoment();
+
+        keuzemomentenArray = new KeuzeMoment[keuzemomenten.size()];
+        keuzemomenten.toArray(keuzemomentenArray);
+        volgende();
+    }
+
+    private void volgende() {
+        double percentage = plek / test.getKeuzemomenten().doubleValue() * 100;
+        voortgang.setValue((int) percentage);
+        if (plek < keuzemomentenArray.length && !timerFinished) {
+            startmoment = new Date();
+            KeuzeMoment keuzeMoment = keuzemomentenArray[plek];
+            Set<KeuzeMomentFoto> kmfs = keuzeMoment.getFotos();
+            KeuzeMomentFoto[] kmfA = new KeuzeMomentFoto[4];
+            kmfs.toArray(kmfA);
+            KeuzeMomentFoto een = kmfA[0];
+            KeuzeMomentFoto twee = kmfA[1];
+            KeuzeMomentFoto drie = kmfA[2];
+            KeuzeMomentFoto vier = kmfA[3];
+
+            positionFoto(een);
+            positionFoto(twee);
+            positionFoto(drie);
+            positionFoto(vier);
+
+            current = keuzeMoment;
+            plek++;
+        } else {
+            EntityManager em = MyDb.getThreadEntityManager();
+            EntityTransaction transaction = em.getTransaction();
+            try {
+                transaction.begin();
+                test.setStatus(Status.AFGEROND);
+                test.setEinddatum(new Date());
+            } catch (Exception e) {
+                log.error("", e);
+                if (transaction.isActive()) {
+                    transaction.rollback();
+                }
+            } finally {
+                if (transaction.isActive()) {
+                    transaction.commit();
+                }
+
+            }
+            status.setText("Test klaar. Roep de docent.");
+        }
+    }
+
+    private void positionFoto(KeuzeMomentFoto kmf) {
+        String fotoPlek = kmf.getPositie().toString();
+        if (fotoPlek.equals(Plaats.LINKSBOVEN.toString())) {
+            foto1.setFoto(kmf);
+        } else if (fotoPlek.equals(Plaats.RECHTSBOVEN.toString())) {
+            foto2.setFoto(kmf);
+        } else if (fotoPlek.equals(Plaats.LINKSONDER.toString())) {
+            foto3.setFoto(kmf);
+        } else if (fotoPlek.equals(Plaats.RECHTSONDER.toString())) {
+            foto4.setFoto(kmf);
+        }
+    }
+
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jPanel1 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+        foto1 = new meine.app.TestImagePanel();
+        welkom = new javax.swing.JLabel();
+        leerlingnaam = new javax.swing.JLabel();
+        foto2 = new meine.app.TestImagePanel();
+        startTest = new javax.swing.JButton();
+        status = new javax.swing.JLabel();
+        voortgang = new javax.swing.JProgressBar();
+        jPanel3 = new javax.swing.JPanel();
+        foto3 = new meine.app.TestImagePanel();
+        foto4 = new meine.app.TestImagePanel();
+
+        setUndecorated(true);
+
+        jPanel1.setBackground(new java.awt.Color(252, 220, 147));
+
+        jPanel2.setBackground(new java.awt.Color(252, 220, 147));
+
+        foto1.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        foto1.setMinimumSize(new java.awt.Dimension(400, 400));
+        foto1.setPlaats(meine.util.Plaats.LINKS);
+        foto1.setPreferredSize(new java.awt.Dimension(400, 400));
+
+        welkom.setFont(new java.awt.Font("Tahoma", 1, 24));
+        welkom.setForeground(new java.awt.Color(51, 170, 110));
+        welkom.setText("Welkom");
+
+        leerlingnaam.setFont(new java.awt.Font("Tahoma", 1, 24));
+        leerlingnaam.setForeground(new java.awt.Color(51, 170, 110));
+
+        javax.swing.GroupLayout foto1Layout = new javax.swing.GroupLayout(foto1);
+        foto1.setLayout(foto1Layout);
+        foto1Layout.setHorizontalGroup(
+            foto1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(foto1Layout.createSequentialGroup()
+                .addGroup(foto1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(welkom)
+                    .addGroup(foto1Layout.createSequentialGroup()
+                        .addGap(110, 110, 110)
+                        .addComponent(leerlingnaam)))
+                .addContainerGap(344, Short.MAX_VALUE))
+        );
+        foto1Layout.setVerticalGroup(
+            foto1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(foto1Layout.createSequentialGroup()
+                .addGroup(foto1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(welkom)
+                    .addComponent(leerlingnaam))
+                .addContainerGap(423, Short.MAX_VALUE))
+        );
+
+        foto2.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        foto2.setMinimumSize(new java.awt.Dimension(400, 400));
+        foto2.setPreferredSize(new java.awt.Dimension(400, 400));
+
+        javax.swing.GroupLayout foto2Layout = new javax.swing.GroupLayout(foto2);
+        foto2.setLayout(foto2Layout);
+        foto2Layout.setHorizontalGroup(
+            foto2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 433, Short.MAX_VALUE)
+        );
+        foto2Layout.setVerticalGroup(
+            foto2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 452, Short.MAX_VALUE)
+        );
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(foto1, javax.swing.GroupLayout.PREFERRED_SIZE, 454, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 185, Short.MAX_VALUE)
+                .addComponent(foto2, javax.swing.GroupLayout.PREFERRED_SIZE, 433, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(foto2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 452, Short.MAX_VALUE)
+                    .addComponent(foto1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 452, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+
+        startTest.setText("Start test");
+        startTest.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                startTestActionPerformed(evt);
+            }
+        });
+
+        status.setFont(new java.awt.Font("Tahoma", 1, 24)); // NOI18N
+        status.setForeground(new java.awt.Color(255, 0, 0));
+        status.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+
+        jPanel3.setBackground(new java.awt.Color(252, 220, 147));
+
+        foto3.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        foto3.setMinimumSize(new java.awt.Dimension(400, 400));
+        foto3.setPreferredSize(new java.awt.Dimension(400, 400));
+
+        javax.swing.GroupLayout foto3Layout = new javax.swing.GroupLayout(foto3);
+        foto3.setLayout(foto3Layout);
+        foto3Layout.setHorizontalGroup(
+            foto3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 457, Short.MAX_VALUE)
+        );
+        foto3Layout.setVerticalGroup(
+            foto3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 446, Short.MAX_VALUE)
+        );
+
+        foto4.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        foto4.setMinimumSize(new java.awt.Dimension(400, 400));
+        foto4.setPreferredSize(new java.awt.Dimension(400, 400));
+
+        javax.swing.GroupLayout foto4Layout = new javax.swing.GroupLayout(foto4);
+        foto4.setLayout(foto4Layout);
+        foto4Layout.setHorizontalGroup(
+            foto4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 428, Short.MAX_VALUE)
+        );
+        foto4Layout.setVerticalGroup(
+            foto4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 446, Short.MAX_VALUE)
+        );
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(foto3, javax.swing.GroupLayout.PREFERRED_SIZE, 457, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 187, Short.MAX_VALUE)
+                .addComponent(foto4, javax.swing.GroupLayout.PREFERRED_SIZE, 428, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(foto4, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE)
+                    .addComponent(foto3, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(status)
+                .addContainerGap(1108, Short.MAX_VALUE))
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+            .addComponent(voortgang, javax.swing.GroupLayout.DEFAULT_SIZE, 1120, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(140, 140, 140)
+                .addComponent(startTest, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(700, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(21, 21, 21)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(startTest)
+                    .addComponent(status))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(voortgang, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void startTestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startTestActionPerformed
+        startTest.setVisible(false);
+        leerlingnaam.setVisible(false);
+        welkom.setVisible(false);
+        if(test.getTijdlimiet() > 0){
+            timer.start();
+        }
+
+        runTest();
+    }//GEN-LAST:event_startTestActionPerformed
+
+    public void setGekozenFoto(KeuzeMomentFoto f, Plaats plaats) {
+        Date eindeMoment = new Date();
+        long diff = eindeMoment.getTime() - startmoment.getTime();
+        long sec = (diff + 500) / 1000;
+        Double tijdInSeconde = Math.ceil(sec);
+        EntityManager em = MyDb.getThreadEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+        try {
+            transaction.begin();
+
+            current.setKeuze(f);
+            current.setLopendetest(test);
+            current.setTijd(tijdInSeconde);
+
+            em.persist(f);
+        } catch (Exception e) {
+            log.error("", e);
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+        } finally {
+            if (transaction.isActive()) {
+                transaction.commit();
+            }
+
+        }
+        volgende();
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        // Timer has fired
+        timerFinished = true;
+    }
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private meine.app.TestImagePanel foto1;
+    private meine.app.TestImagePanel foto2;
+    private meine.app.TestImagePanel foto3;
+    private meine.app.TestImagePanel foto4;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JLabel leerlingnaam;
+    private javax.swing.JButton startTest;
+    private javax.swing.JLabel status;
+    private javax.swing.JProgressBar voortgang;
+    private javax.swing.JLabel welkom;
+    // End of variables declaration//GEN-END:variables
+
+}
