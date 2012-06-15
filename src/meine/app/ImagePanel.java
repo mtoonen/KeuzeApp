@@ -40,7 +40,6 @@ public class ImagePanel extends javax.swing.JPanel {
     @Override
     public void paintComponent(Graphics g) {
 
-        // g.drawImage(image, 0, 0, this.getWidth(), this.getHeight(), null);
         g.setColor(this.getBackground());
         int panelWidth = this.getWidth();
         int panelHeight = this.getHeight();
